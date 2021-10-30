@@ -16,7 +16,7 @@ pub async fn send_message(
     data: web::Data<models::AppState>,
     message: web::Json<models::Message>,
 ) -> Result<HttpResponse, Error> {
-    if message.username.len() > 32 || message.username.len() <= 0 {
+    if message.username.len() > 32 || message.username.is_empty() {
         let response = models::Response {
             success: false,
             message: "Username is greater than 32 characters or 0.".to_string(),
@@ -25,7 +25,7 @@ pub async fn send_message(
         return Ok(HttpResponse::PayloadTooLarge().json(response));
     }
 
-    if message.content.len() > 2000 || message.content.len() <= 0 {
+    if message.content.len() > 2000 || message.content.is_empty() {
         let response = models::Response {
             success: false,
             message: "Message content greater than 2000 characters or 0.".to_string(),
