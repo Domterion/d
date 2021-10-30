@@ -1,7 +1,7 @@
 use std::{env, sync::Mutex};
 
 use actix_cors::Cors;
-use actix_web::{web, App, HttpServer};
+use actix_web::{middleware, web, App, HttpServer};
 use dotenv::dotenv;
 use reqwest::Client;
 
@@ -20,10 +20,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
     let port = env::var("PORT")?.parse::<u16>()?;
+
     let data = web::Data::new(models::AppState {
         client: Client::new(),
         sent: Mutex::new(0),
     });
+
+    println!("Starting server...");
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -36,10 +39,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         App::new()
             .app_data(data.clone())
+            .wrap(middleware::Logger::default())
             .wrap(cors)
+            .route("/", web::get().to(routes::index))
             .route("/send", web::post().to(routes::send_message))
     })
-    .bind(("127.0.0.1", port))?
+    .bind(("0.0.0.0", port))?
     .run()
     .await?;
 

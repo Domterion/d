@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>d</title>
+  </head>
+  <body>
+    <!-- prettier-ignore -->
+    <pre>
+ .----------------. 
+| .--------------. |
+| |  ________    | |
+| | |_   ___ `.  | |
+| |   | |   `. \ | |
+| |   | |    | | | |
+| |  _| |___.' / | |
+| | |________.'  | |
+| |              | |
+| '--------------' |
+ '----------------' 
+
+ send me messages with a webhook
+ 
+ messages sent here: https://discord.domm.me
+
+ username cant be more than 32 chars
+ content cant be more than 2000 chars
+  </pre>
+
+    <p id="status"></p>
+    <form>
+      <label for="username">username</label><br />
+      <input type="text" id="username" name="username" value="" /><br />
+      <label for="content">content</label><br />
+      <textarea id="content" name="text" rows="12" cols="25" value=""></textarea
+      ><br />
+      <input
+        type="submit"
+        id="send"
+        value="send"
+        onclick="return onSubmit();"
+      />
+    </form>
+    <script>
+      function onSubmit() {
+        var username = document.getElementById("username");
+        var content = document.getElementById("content");
+
+        var data = `{"username": "${username.value}", "content": "${content.value}"}`;
+
+        const options = {
+          method: "POST",
+          body: data,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        };
+
+        fetch("/send", options)
+          .then((res) => res.json())
+          .then((res) => console.log(res));
+
+        username.value = "";
+        content.value = "";
+
+        return false;
+      }
+    </script>
+  </body>
+</html>

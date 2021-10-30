@@ -1,32 +1,37 @@
 use std::env;
 
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use actix_web::{web, Error, HttpRequest, HttpResponse};
+use reqwest::StatusCode;
 
 use crate::models;
+
+pub async fn index() -> Result<HttpResponse, Error> {
+    Ok(HttpResponse::build(StatusCode::OK)
+        .content_type("text/html; charset=utf-8")
+        .body(include_str!("../static/index.html")))
+}
 
 pub async fn send_message(
     _req: HttpRequest,
     data: web::Data<models::AppState>,
     message: web::Json<models::Message>,
-) -> impl Responder {
-    let _ = message.content.replace("@", "@\\u200b");
-
-    if message.username.len() > 32 {
+) -> Result<HttpResponse, Error> {
+    if message.username.len() > 32 || message.username.len() <= 0 {
         let response = models::Response {
             success: false,
-            message: "Username is greater than 32 characters.".to_string(),
+            message: "Username is greater than 32 characters or 0.".to_string(),
         };
 
-        return HttpResponse::PayloadTooLarge().json(response);
+        return Ok(HttpResponse::PayloadTooLarge().json(response));
     }
 
-    if message.content.len() > 2000 {
+    if message.content.len() > 2000 || message.content.len() <= 0 {
         let response = models::Response {
             success: false,
-            message: "Message content greater than 2000 characters.".to_string(),
+            message: "Message content greater than 2000 characters or 0.".to_string(),
         };
 
-        return HttpResponse::PayloadTooLarge().json(response);
+        return Ok(HttpResponse::PayloadTooLarge().json(response));
     }
 
     let mut sent = data.sent.lock().unwrap();
@@ -38,7 +43,7 @@ pub async fn send_message(
         content: "`📧`".to_string(),
         embeds: vec![models::Embed {
             author: models::EmbedAuthor {
-                name: content.username.to_owned()
+                name: content.username.to_owned(),
             },
             description: content.content.to_owned(),
             color: env::var("EMBED_COLOR").unwrap(),
@@ -63,5 +68,5 @@ pub async fn send_message(
 
     *sent += 1;
 
-    HttpResponse::Ok().json(response)
+    Ok(HttpResponse::Ok().json(response))
 }

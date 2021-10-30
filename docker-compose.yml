@@ -1,0 +1,14 @@
+version: "3"
+services:
+  d:
+    build:
+      context: "."
+    restart: always
+    tty: true
+    ports:
+      - "8087:8087"
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
